@@ -23,6 +23,7 @@ def update(model, file):
     points_tensor = points_tensor.unsqueeze(0)
     predicted_grasps, predicted_scores = model(points_tensor, gt_sampling=None, gt_grasps=None)
 
+    print(predicted_grasps)
     predicted_grasps = predicted_grasps.cpu().detach().numpy().flatten()
     predicted_scores = predicted_scores.cpu().detach().numpy()
     predicted_grasps_bytes = predicted_grasps.tobytes()
@@ -68,6 +69,7 @@ def run():
     while True:
         time.sleep(0.1)
         files = glob.glob("/tmp/*.pcd")
+        files = ['snapshot-20241211161050.pcd']
         for file in files:
             update(model, file)
             # os.remove(file)
