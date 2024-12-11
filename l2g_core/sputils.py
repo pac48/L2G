@@ -28,20 +28,28 @@ def _unique(arr):
     return arr[np.sort(idx)]
 
 
+import torch
+
+
 def nn_matching(full_pc, idx, k, complete_fps=True, counts=None):
     batch_size = np.size(full_pc, 0)
-    out_pc = np.zeros((full_pc.shape[0], k, 3))
-    for ii in range(0, batch_size):
-        best_idx = idx[ii]
-        if complete_fps:
-            best_idx = _unique(best_idx)
-            out_pc[ii] = _fps_from_given_pc(full_pc[ii], k, full_pc[ii][best_idx])
-        elif counts is not None:
-            best_idx = best_idx[np.argsort(-counts)]
-            out_pc[ii] = full_pc[ii][best_idx]
-        else:
-            out_pc[ii] = full_pc[ii][best_idx]
+    if batch_size > 1:
+        raise Exception("bad batch size")
+    # # out_pc = np.zeros((full_pc.shape[0], k, 3))
+    # out_pc = []
+    # for ii in range(0, batch_size):
+    best_idx = idx[0]
+    #     if complete_fps:
+    #         best_idx = _unique(best_idx)
+    #         out_pc[ii] = _fps_from_given_pc(full_pc[ii], k, full_pc[ii][best_idx])
+    #     elif counts is not None:
+    _, indices = torch.sort(-counts)
+    best_idx = best_idx[indices]
+    out_pc = full_pc[0][best_idx]
+    # else:
+    #     out_pc[ii] = full_pc[ii][best_idx]
 
+    out_pc = out_pc.unsqueeze(0)
     return out_pc[:, 0:k, :]
 
 

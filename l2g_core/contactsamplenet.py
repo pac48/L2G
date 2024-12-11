@@ -71,23 +71,29 @@ class ContactSampleNet(nn.Module):
         # HARD SAMPLING
         if not self.training:
             # Retrieve nearest neighbor indices
-            _, idx = KNN(1, transpose_mode=False)(x.contiguous(), y.contiguous())
+            # _, idx = KNN(1, transpose_mode=False)(x.contiguous(), y.contiguous())
+            dist = torch.norm(x.unsqueeze(3) - y.unsqueeze(2),dim=1)
+            nearest, idx = torch.min(dist, dim=1)
+            idx = idx.unsqueeze(0)
+
+
             idx, counts = torch.unique(idx, return_counts=True)
 
             # Convert to numpy arrays in B x N x 3 format. we assume 'bcn' format.
-            x = x.permute(0, 2, 1).cpu().detach().numpy()
-            y = y.permute(0, 2, 1).cpu().detach().numpy()
+            x = x.permute(0, 2, 1)#.cpu().detach().numpy()
+            y = y.permute(0, 2, 1)#.cpu().detach().numpy()
 
-            idx = idx.cpu().detach().numpy()
-            counts = counts.cpu().detach().numpy() # delete
-            idx = np.squeeze(idx)
+            # idx = idx.cpu().detach().numpy()
+            # counts = counts.cpu().detach().numpy() # delete
+            idx = torch.squeeze(idx)
             # idx, counts = np.unique(idx, return_counts=True)
-            idx = np.reshape(idx, (1, -1))
+            idx = torch.reshape(idx, (1, -1))
 
             z = sputils.nn_matching(x, idx, idx.shape[1], complete_fps=False, counts=counts)
 
             # Matched points are in B x N x 3 format.
-            match = torch.tensor(z, dtype=torch.float32).cuda()
+            # match = torch.tensor(z, dtype=torch.float32).cuda()
+            match = z
 
         # Change to output shapes
         if self.output_shape == "bnc":
