@@ -3,7 +3,6 @@ import torch
 import numpy as np
 
 
-
 def run():
     # MODEL DEFINITION
     feat = "deco"
@@ -42,7 +41,10 @@ def run():
         (points_tensor,),  # inputs of the model,
         "l2g.onnx",  # filename of the ONNX model
         input_names=["point_cloud"],  # Rename inputs for the ONNX model
-        dynamic_axes={'point_cloud': {1: 'num_points'}},  # variable length axes
+        output_names=["predicted_grasps", "grasp_scores"],  # Rename inputs for the ONNX model
+        dynamic_axes={'point_cloud': {1: 'num_points'},
+                      'predicted_grasps': {1: 'num_grasps'},
+                      'grasp_scores': {1: 'num_grasps'}},  # variable length axes
         opset_version=13,
     )
 

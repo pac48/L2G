@@ -374,4 +374,5 @@ class GraspSampleNet(nn.Module):
 
         grasp_scores = self.grasp_classifier(grasp_feat)  # [B x M x 1]
 
-        return (first_generated, first_sampled), predicted_grasps, grasp_scores
+        # return (first_generated, first_sampled), predicted_grasps, grasp_scores
+        return predicted_grasps, grasp_scores

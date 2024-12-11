@@ -21,7 +21,7 @@ def update(model, file):
 
     points_tensor = torch.tensor(points).float().cuda()
     points_tensor = points_tensor.unsqueeze(0)
-    (generated, matched), predicted_grasps, predicted_scores = model(points_tensor, gt_sampling=None, gt_grasps=None)
+    predicted_grasps, predicted_scores = model(points_tensor, gt_sampling=None, gt_grasps=None)
 
     predicted_grasps = predicted_grasps.cpu().detach().numpy().flatten()
     predicted_scores = predicted_scores.cpu().detach().numpy()
