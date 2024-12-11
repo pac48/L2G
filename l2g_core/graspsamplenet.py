@@ -71,7 +71,10 @@ class PosePredictBatch(nn.Module):
 
         # predicted: [bs, num_grasp_pred, 3 + 3 + 1 ]
         predicted_contacts = predicted[:, :, :3]
-        pred_truth_dist = torch.cdist(predicted_contacts, all_contacts)  # [bs, num_grasp_pred, 2 x num_grasps]
+        # pred_truth_dist = torch.cdist(predicted_contacts, all_contacts)  # [bs, num_grasp_pred, 2 x num_grasps]
+        # pred_truth_dist = torch.sqrt(torch.pow(predicted_contacts, 2) - torch.pow(all_contacts, 2))
+        pred_truth_dist = nn.functional.pairwise_distance(predicted_contacts, all_contacts, p=2)
+
         # consideriamo corrispondenza 1:1 tra punto samplato e grasp
         _, min_dist_idxs = torch.min(pred_truth_dist, dim=-1)  # [bs, num_grasp_pred]
 
@@ -282,7 +285,10 @@ class GraspSampleNet(nn.Module):
         # for each projected point, I need to get the K closest point in the pc
         # first, compute the distances between the sampled and original points
         if metric == 'euclidean':
-            distance_matrix = - torch.cdist(y, x)  # [B x M x N]
+            # distance_matrix = - torch.cdist(y, x)  # [B x M x N]
+            distance_matrix = torch.sqrt(torch.sum(torch.pow(x, 2) - torch.pow(y, 2), dim=2)).unsqueeze(0)
+            # distance_matrix = nn.functional.pairwise_distance(y, x, p=2)
+
         else:
             raise NotImplementedError
         # topk returns a tuple, whose first element are the values and the second the indexes

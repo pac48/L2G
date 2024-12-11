@@ -96,7 +96,8 @@ class GConv(nn.Module):
         _, top_idx = torch.topk(-D, k=(self.min_nn + 1),
                                 dim=-1)  # (-D is fundamental for following line (i.e. 22)) - [B, N, min_nn + 1]
         # not that 'repeat_interleave' is not available in torch < 1.1.0
-        top_idx2 = top_idx[:, :, 0].repeat_interleave(self.min_nn, 1)  # expected: [B, N*min_nn]
+        # top_idx2 = top_idx[:, :, 0].repeat_interleave(self.min_nn, 1)  # expected: [B, N*min_nn]
+        top_idx2 = top_idx[:, :, 0].repeat(1, self.min_nn)
         top_idx = top_idx[:, :, 1:].reshape(-1, N * self.min_nn)  # [B, N, min_nn] -> [B, N*min_nn]
         x_tilde1 = index_points(h, top_idx)  # [B, N*min_nn, in_feat]
         x_tilde2 = index_points(h, top_idx2)  # [B, N*min_nn, in_feat]
