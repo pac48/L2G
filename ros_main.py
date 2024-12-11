@@ -8,15 +8,21 @@ import numpy as np
 import torch
 import glob
 
+
 def update(model, file):
     # Load the PCD file
     # cloud = pypcd.PointCloud.from_path("labsim_test.pcd")
     pcd = o3d.io.read_point_cloud(file)
     # Access the point cloud data as a numpy array
     points = np.array(pcd.points)
+    if points.shape[0] > 10000:
+        inds = np.linspace(0, points.shape[0] - 1, 10000, dtype=np.int32)
+        points = points[inds, :]
+
     points_tensor = torch.tensor(points).float().cuda()
     points_tensor = points_tensor.unsqueeze(0)
     (generated, matched), predicted_grasps, predicted_scores = model(points_tensor, gt_sampling=None, gt_grasps=None)
+
     predicted_grasps = predicted_grasps.cpu().detach().numpy().flatten()
     predicted_scores = predicted_scores.cpu().detach().numpy()
     predicted_grasps_bytes = predicted_grasps.tobytes()
@@ -25,16 +31,17 @@ def update(model, file):
     with open(f"/tmp/{os.path.basename(file).replace('.pcd', '.bin')}", 'wb') as f:
         f.write(predicted_grasps_bytes)
 
+
 def run():
     # MODEL DEFINITION
-    feat = "pointnet2"
-    deco_config = -1
-    sampled_grasps=500
-    sample_group_size = 10 # maybe?
+    feat = "deco"
+    deco_config = 'deco/deco_config.yaml'
+    sampled_grasps = 500
+    sample_group_size = 10  # maybe?
     neigh_size = 100
-    train_temperature = True # maybe?
+    train_temperature = True  # maybe?
     use_angle_feat = True
-    neigh_aggr = "w_avg" # maybe?
+    neigh_aggr = "w_avg"  # maybe?
     model = GraspSampleNet(
         feat_extractor=feat,
         deco_config_path=deco_config,
@@ -51,8 +58,9 @@ def run():
         resume=True
     )
     model = model.cuda()
-    path = "checkpoints_L2G/pn2_l2g_nn100_grasps500/opt-adam_lr0.0001_lr-step100_wd0.0001_epochs500_seed14025/checkpoints/epoch_500.pth"
-    load_checkpoint(model=model, filename=path)
+    path = "checkpoints_L2G/deco_l2g_nn100_grasps500/opt-adam_lr0.0001_lr-step100_wd0.0001_epochs500_seed21996/checkpoints/epoch_500.pth"
+    checkpoint = torch.load(path)
+    res_load_weights = model.load_state_dict(checkpoint['model'], strict=True)
 
     # set eval mode
     model = model.eval()
@@ -62,7 +70,7 @@ def run():
         files = glob.glob("/tmp/*.pcd")
         for file in files:
             update(model, file)
-            os.remove(file)
+            # os.remove(file)
 
 
 if __name__ == "__main__":
