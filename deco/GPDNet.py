@@ -26,7 +26,7 @@ def compute_graph(h):
 
 def myroll(h, shift=0, axis=2):
     h_len = h.size()[2]
-    d = int(h_len - shift)
+    d = h_len - shift
     return torch.cat((h[:, :, d:], h[:, :, :d]), dim=axis)
 
 

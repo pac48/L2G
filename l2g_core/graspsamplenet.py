@@ -286,8 +286,10 @@ class GraspSampleNet(nn.Module):
         # first, compute the distances between the sampled and original points
         if metric == 'euclidean':
             # distance_matrix = - torch.cdist(y, x)  # [B x M x N]
-            distance_matrix = torch.sqrt(torch.sum(torch.pow(x, 2) - torch.pow(y, 2), dim=2)).unsqueeze(0)
-            # distance_matrix = nn.functional.pairwise_distance(y, x, p=2)
+            y2 = torch.reshape(y.transpose(1,2), (1, 1, 3, -1))
+            x2 = x.unsqueeze(3)
+            distance_matrix = torch.sqrt(torch.sum(torch.pow(x2 - y2, 2), dim=2))
+            distance_matrix = torch.transpose(distance_matrix, 2, 1)
 
         else:
             raise NotImplementedError
@@ -328,7 +330,8 @@ class GraspSampleNet(nn.Module):
         # get the K (sample_group_size) closest point in the pc and their relative features and aggregate them
         # M : number of sampled points
         # C : feature dimension
-        first_contact_feat = self.compute_neigh_features(pc, first_sampled, point_feat, self.neigh_size)  # [B x M x K x C]
+        first_contact_feat = self.compute_neigh_features(pc, first_sampled, point_feat,
+                                                         self.neigh_size)  # [B x M x K x C]
 
         """GENERATE THE FINAL GRASP"""
         first_contact = first_sampled

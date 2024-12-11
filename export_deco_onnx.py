@@ -1,14 +1,7 @@
-import os
-import time
-
-from torch.onnx.symbolic_registry import opset_version
-
 from l2g_core.graspsamplenet import GraspSampleNet
-from l2g_core.pytorch_utils import load_checkpoint
-import open3d as o3d
-import numpy as np
 import torch
-import glob
+import numpy as np
+
 
 
 def run():
@@ -43,7 +36,7 @@ def run():
 
     # set eval mode
     model = model.eval()
-    points_tensor = torch.ones((1, 10000, 3)).float().cuda()
+    points_tensor = torch.tensor(np.random.rand(1, 10000, 3)).float().cuda()
     torch.onnx.export(
         model,  # model to export
         (points_tensor,),  # inputs of the model,
@@ -53,5 +46,6 @@ def run():
         opset_version=13,
     )
 
-    if __name__ == "__main__":
-        run()
+
+if __name__ == "__main__":
+    run()

@@ -72,14 +72,16 @@ class ContactSampleNet(nn.Module):
         if not self.training:
             # Retrieve nearest neighbor indices
             _, idx = KNN(1, transpose_mode=False)(x.contiguous(), y.contiguous())
+            idx, counts = torch.unique(idx, return_counts=True)
 
             # Convert to numpy arrays in B x N x 3 format. we assume 'bcn' format.
             x = x.permute(0, 2, 1).cpu().detach().numpy()
             y = y.permute(0, 2, 1).cpu().detach().numpy()
 
             idx = idx.cpu().detach().numpy()
+            counts = counts.cpu().detach().numpy() # delete
             idx = np.squeeze(idx)
-            idx, counts = np.unique(idx, return_counts=True)
+            # idx, counts = np.unique(idx, return_counts=True)
             idx = np.reshape(idx, (1, -1))
 
             z = sputils.nn_matching(x, idx, idx.shape[1], complete_fps=False, counts=counts)
