@@ -33,14 +33,14 @@ def update(model, file):
 
 def run():
     # MODEL DEFINITION
-    feat = "pointnet2"
-    deco_config = -1
-    sampled_grasps=500
-    sample_group_size = 10 # maybe?
+    feat = "deco"
+    deco_config = 'deco/deco_config.yaml'
+    sampled_grasps = 500
+    sample_group_size = 10  # maybe?
     neigh_size = 100
-    train_temperature = True # maybe?
+    train_temperature = True  # maybe?
     use_angle_feat = True
-    neigh_aggr = "w_avg" # maybe?
+    neigh_aggr = "w_avg"  # maybe?
     model = GraspSampleNet(
         feat_extractor=feat,
         deco_config_path=deco_config,
@@ -57,7 +57,7 @@ def run():
         resume=True
     )
     model = model.cuda()
-    path = "checkpoints_L2G/pn2_l2g_nn100_grasps500/opt-adam_lr0.0001_lr-step100_wd0.0001_epochs500_seed14025/checkpoints/epoch_500.pth"
+    path = "checkpoints_L2G/deco_l2g_nn100_grasps500/opt-adam_lr0.0001_lr-step100_wd0.0001_epochs500_seed21996/checkpoints/epoch_500.pth"
     checkpoint = torch.load(path)
     res_load_weights = model.load_state_dict(checkpoint['model'], strict=True)
 
