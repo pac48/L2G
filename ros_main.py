@@ -69,7 +69,7 @@ def run():
     while True:
         time.sleep(0.1)
         files = glob.glob("/tmp/*.pcd")
-        files = ['snapshot-20241211161050.pcd']
+        files = ['labsim_test.pcd']
         for file in files:
             update(model, file)
             # os.remove(file)

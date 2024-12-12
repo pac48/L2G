@@ -286,10 +286,14 @@ class GraspSampleNet(nn.Module):
         # first, compute the distances between the sampled and original points
         if metric == 'euclidean':
             # distance_matrix = - torch.cdist(y, x)  # [B x M x N]
-            y2 = torch.reshape(y.transpose(1,2), (1, 1, 3, -1))
+            # print(- torch.cdist(y, x))
+            y2 = torch.reshape(y.transpose(1, 2), (1, 1, 3, -1))
             x2 = x.unsqueeze(3)
             distance_matrix = torch.sqrt(torch.sum(torch.pow(x2 - y2, 2), dim=2))
             distance_matrix = torch.transpose(distance_matrix, 2, 1)
+            distance_matrix = -distance_matrix
+            # print(distance_matrix)
+            # exit(0)
 
         else:
             raise NotImplementedError
