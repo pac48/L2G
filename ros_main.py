@@ -56,7 +56,7 @@ def run():
         angle_feat_depth=2,
         projected_feat_aggregation=neigh_aggr,
         bn=False,
-        resume=True
+        resume=False
     )
     model = model.cuda()
     path = "checkpoints_L2G/deco_l2g_nn100_grasps500/opt-adam_lr0.0001_lr-step100_wd0.0001_epochs500_seed21996/checkpoints/epoch_500.pth"
