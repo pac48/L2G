@@ -19,6 +19,21 @@ def getUniqueGripperX2(gripperX):
     return gripperX
 
 
+def skewmat(x_vec):
+    W_row0 = torch.tensor([0, 0, 0, 0, 0, 1, 0, -1, 0], dtype=torch.float32).view(3, 3).to(x_vec.device)
+    W_row1 = torch.tensor([0, 0, -1, 0, 0, 0, 1, 0, 0], dtype=torch.float32).view(3, 3).to(x_vec.device)
+    W_row2 = torch.tensor([0, 1, 0, -1, 0, 0, 0, 0, 0], dtype=torch.float32).view(3, 3).to(x_vec.device)
+    x_skewmat = torch.stack(
+        [torch.matmul(x_vec, W_row0.t()), torch.matmul(x_vec, W_row1.t()), torch.matmul(x_vec, W_row2.t())], dim=-1)
+
+    return x_skewmat
+
+
+def cross(matrix, vector):
+    skew = skewmat(vector)
+    return -torch.matmul(skew, matrix.unsqueeze(-1)).squeeze(-1)
+
+
 def getOrientation2(contact1, center, cosAngle):
     gripperX = contact1 - center
     gripperX = getUniqueGripperX2(gripperX)
@@ -26,17 +41,22 @@ def getOrientation2(contact1, center, cosAngle):
 
     zAxis = torch.tensor([0, 0, 1], dtype=torch.float).to(center.device)
     zAxis = zAxis.expand_as(gripperX)
-    tangentY = zAxis.cross(gripperX)
+
+    # tangentY = zAxis.cross(gripperX)
+    tangentY = cross(zAxis, gripperX)
     tangentY = F.normalize(tangentY, dim=1)
     # print('tangentY\t', tangentY)
 
-    tangentZ = gripperX.cross(tangentY)
+    # tangentZ = gripperX.cross(tangentY) = (
+    tangentZ = cross(gripperX, tangentY)
+
     # print('tangentZ\t', tangentZ)
     sinAngle = torch.sqrt(1 - cosAngle * cosAngle)
 
     gripperZ = cosAngle[:, None].expand_as(tangentY) * tangentY + sinAngle[:, None].expand_as(tangentY) * tangentZ
     gripperZ = F.normalize(gripperZ, dim=1)
-    gripperY = gripperZ.cross(gripperX)
+    # gripperY = gripperZ.cross(gripperX)
+    gripperY = cross(gripperZ, gripperX)
     gripperY = F.normalize(gripperY, dim=1)
     return torch.transpose(torch.stack([gripperX, gripperY, gripperZ], dim=1), dim0=-1, dim1=-2)
 
